@@ -120,7 +120,7 @@ class TwelveTone < FXMainWindow
 #MAIN BODY
     matrix1 = FXMatrix.new(self, 3, MATRIX_BY_COLUMNS|LAYOUT_SIDE_TOP|LAYOUT_FILL_X)
 
-    @poolsize1 = FXDataTarget.new(10)
+    @poolsize1 = FXDataTarget.new(15)
     @generations1 = FXDataTarget.new(12)
     @avamount1 = FXDataTarget.new(100)
 
@@ -608,6 +608,28 @@ def topranked (poolin,topno)
 end
 
 
+def topranked2 (array,generations)
+    #takes in array and splits it into separate arrays according to value of the first index
+    toplist = []
+    array.each{|x| toplist.push(x[0])}
+    toplist.uniq!
+    toplist.sort!{ |x,y| y <=> x }
+    count = 0 
+    newarr = []
+    while (count < toplist.length) && (newarr.length < generations)
+        halfnewarr = []
+        array.each do |x|
+            if x[0] == toplist[count]
+                halfnewarr.push(x)
+            end
+        end 
+        halfnewarr.shuffle!
+        halfnewarr.each {|x| newarr.push(x)}
+        count += 1
+    end
+    return newarr[0...generations]
+end
+
 def checksplit (checkin)
     checkindex = []
     checkvalue = []
@@ -772,6 +794,12 @@ def errorchecker ()
     valzeroone = 0 #checks no values are < 0 or > 1
     allcrit = 1 # checks at least one criteria is selected
 
+    if @pearsoncheck.length > 0
+        pearsy = @pearsoncheck[0].abs
+    else
+        pearsy = 0
+    end
+
     allvalues = { "interval" => {"1" => @intervalcheck["value"]}, 
               "prime" => @primecheck, 
               "retrogade" => @retrogradecheck,
@@ -779,7 +807,7 @@ def errorchecker ()
               "retroinverted" => @retroinvertedcheck,
               "totalsym" => @totalsymcheck,
               "pcset" => @pcsetcheck,
-              "pearson" => @pearsoncheck
+              "pearson" => {"pearson" => pearsy}
     }
 
     @onoff.each do |k,v|
@@ -852,7 +880,6 @@ def geneticprocess (poolsize,generations,type,avamount)
             end
         end
 
-
         if type == "rarity"
             @mainaverage = average(avamount)
         end
@@ -880,18 +907,19 @@ def geneticprocess (poolsize,generations,type,avamount)
                 end
                 minipool.push(ratingofrow)
             end
-            topranked(minipool,poolsize).each  do |k| 
+            minipool.each do |k| 
                 @smallpool.push(k)
             end
-        end
+        end       
         @smallpool.keep_if {|bbb| bbb.length >= 13}
         @smallpool.uniq!
-        @smallpool.sort! 
+        @smallpool.sort!{ |x,y| x <=> y }
+        smallpool2 = topranked2(@smallpool,poolsize)
 
         puts "Generation #{counter}"
-        @smallpool.slice!(0..-(poolsize+1))
+        #@smallpool.slice!(0..-(poolsize+1))
         pool = []
-        @smallpool.each do |aaa| 
+        smallpool2.each do |aaa| 
             cleaned = aaa #this rounds excessive floats in the command prompt output
             cleaned.map! do |dd|
                 if (dd.is_a? Float) == true
@@ -970,6 +998,8 @@ end
     guitoarray(@pearsoncheck1,@pearsoncheck2)   
     @pearsoncheck = []
     @pearsoncheck2.each_value{|q| @pearsoncheck.push(q + 1)}
+    puts "@pearsoncheck #{@pearsoncheck}"
+    puts "@pearsoncheck2 #{@pearsoncheck2}"
 
     guitoarray(@weighting1,@weighting)
 
