@@ -112,7 +112,7 @@ class TwelveTone < FXMainWindow
 
 #HEADER
     hFrame1 = FXVerticalFrame.new(self)
-   FXLabel.new(hFrame1, "Calculates optimal 12-tone rows using a genetic algorithm.")
+   FXLabel.new(hFrame1, "This programme uses a genetic algorithm to find optimal 12-tone rows that fit a given set of criteria.")
    FXLabel.new(hFrame1, "All values should be between 0 and 1, or left blank, if ignored.")
     FXHorizontalSeparator.new(self,
       LAYOUT_SIDE_TOP|SEPARATOR_GROOVE|LAYOUT_FILL_X)
@@ -335,7 +335,7 @@ class TwelveTone < FXMainWindow
     
     drawButton.connect(SEL_COMMAND) do
       rowconv = stringtovector(@drawer.value.to_s)
-      puts "#{rowconv}"
+      #puts "#{rowconv}"
       @canvas.scene = rowillustrator(@canvas,5,5,4,250,120,rowconv)     
       counttext =  @vectortext.lineEnd(1)
       vectorred = vectorizer(rowconv).to_s
@@ -485,7 +485,7 @@ def windower (inarray,window)
     # inarray = arrray
     # window = size of window
     windows = []
-    for win in 0..(12-window)
+    for win in 0..(inarray.length-window)
         windows.push(inarray.slice(win,window))
     end
     return windows
@@ -612,7 +612,7 @@ def checksplit (checkin)
     checkindex = []
     checkvalue = []
     checkin.each do |k,v|
-        if v != "x"
+        if v != ""
             checkindex.push(k.to_i)
             checkvalue.push(v)
         end
@@ -763,14 +763,44 @@ def rarity (rowin,average)
     return rowout
 end
 
-def onoffchecker ()
-    errorchecker = 0
+def errorchecker ()
+    #checks input for errors and creates an array.
+  #if the value in the array is 0, it has passed the test, if it is 1, it has failed.
+    allboxes = 0 # checks all criteria have at least one box filled in
+    weightingfilled = 0  # checks every criteria has a weighting box filled.
+    weightingzero = 0 # checks weighting boxes are not less than 0
+    valzeroone = 0 #checks no values are < 0 or > 1
+    allcrit = 1 # checks at least one criteria is selected
+
+    allvalues = { "interval" => {"value" => @intervalcheck["value"]}, 
+              "prime" => @primecheck, 
+              "retrogade" => @retrogradecheck,
+              "inverted" => @invertedcheck,
+              "retroinverted" => @retroinvertedcheck,
+              "totalsym" => @totalsymcheck,
+              "pcset" => @pcsetcheck,
+              "pearson" => @pearsoncheck
+    }
+
     @onoff.each do |k,v|
-        if v == true && @weighting1[k] == ""
-            errorchecker = 1
+        if v == true
+            if allvalues[k].length == 0 # checks all criteria have at least one box filled in
+                allboxes = 1   
+            end
+            if @weighting[k] == nil # checks every criteria has a weighting box filled.
+                weightingfilled = 1
+            elsif @weighting[k] < 0 # checks weighting boxes are not less than 0
+                weightingzero = 1               
+            end
+            allvalues[k].each do |ak,av| #checks no values are < 0 or > 1
+                if av < 0 || av > 1
+                    valzeroone = 1
+                end
+            end
+            allcrit = 0 # checks at least one criteria is selected
         end
     end
-    return errorchecker
+    return [allboxes, weightingfilled, weightingzero, valzeroone, allcrit]
 end
 
 def geneticprocess (poolsize,generations,type,avamount)
@@ -781,39 +811,62 @@ def geneticprocess (poolsize,generations,type,avamount)
     # generations = the number of generations the code runs for.
     # type = whether the algorithm searches for matches "matches" or rarity "rarity"
     # avamount = if in "rarity" mode, the amount of rows sampled to create an average of the combinatorial space.
-    ga = Iterators.new
-
-    @totalweight = 0
-    for w in 0...@weighting.length
-        if @onoff.values[w] == true
-            @totalweight += @weighting.values[w]
-        end
-    end
-
-    if type == "rarity"
-        @mainaverage = average(avamount)
-    end
-
-    pool = [[0,1,2,3,4,5,6,7,8,9,10,11].shuffle!]
-    (poolsize-1).times{pool.push([0,1,2,3,4,5,6,7,8,9,10,11].shuffle!)}
-    @smallpool = []
-
-    #@textArea.Text(" ")
-    @textArea.appendText("Evolution Started!...\n")
-
-#JUST ADDED THIS = TEST IF IT WORKS!...
-    if onoffchecker == 1
-        puts "ERROR: One or more of the criteria has no weighting value!"
-        @textArea.appendText("ERROR: One or more of the criteria has no weighting value!")
-        solution = 1
-    else 
-        solution = 0
-        puts "STARTING PERMUTATIONS: #{pool}"
-    end
-
-#...TO HERE
-   
     
+    #The following makes sure all of the boxes that should be filled are filled:
+    errorscheck = errorchecker()
+
+   # allboxes = 0 # checks all criteria have at least one box filled in
+   # weightingfilled = 0  # checks every criteria has a weighting box filled.
+  #  weightingzero = 0 # checks weighting boxes are not less than 0
+  #  valzeroone = 0 #checks no values are < 0 or > 1
+   # allcrit = 1 # checks at least one criteria is selected
+
+    puts "#{errorscheck}"
+
+    if errorscheck.inject(0){|sum,z| sum + z} != 0      
+        if errorscheck[0] == 1
+            @textArea.appendText("ERROR: There are no values specified for one of your types of criteria!\n")
+        end
+        if errorscheck[1] == 1
+            @textArea.appendText("ERROR: One or more of the criteria have no weighting value!\n")
+        end   
+        if errorscheck[2] == 1
+            @textArea.appendText("ERROR: One or more of the weighting values is <0!\n")
+        end    
+        if errorscheck[3] == 1
+            @textArea.appendText("ERROR: One or more of your values are >1 or <0!\n")
+        end  
+        if errorscheck[4] == 1
+            @textArea.appendText("ERROR: No criteria selected!\n")
+        end
+        solution = 1
+    else
+        puts "#{@primecheck}"
+
+        ga = Iterators.new
+
+        @totalweight = 0
+        @weighting.each do |k,v|
+            if @onoff[k] == true
+                @totalweight += v
+            end
+        end
+
+
+        if type == "rarity"
+            @mainaverage = average(avamount)
+        end
+
+        pool = [[0,1,2,3,4,5,6,7,8,9,10,11].shuffle!]
+        (poolsize-1).times{pool.push([0,1,2,3,4,5,6,7,8,9,10,11].shuffle!)}
+        @smallpool = []
+        @textArea.appendText("Evolution Started!...\n")
+        puts "STARTING PERMUTATIONS: #{pool}"
+        solution = 0
+    end
+
+    allsolutions = []
+    solutionfound = 0
     counter = 1
     while counter <= generations && solution == 0
         pool.each do |row|
@@ -850,19 +903,13 @@ def geneticprocess (poolsize,generations,type,avamount)
                 end
             end
             if aaa[0] == @totalweight #@weighting.values.reduce(:+)
-                puts "SOLUTION: #{cleaned}"
-                @textArea.appendText("SOLUTION. score: #{cleaned[0]} row: #{cleaned.last(12)} \n")
-                if counter == generations
-            #       puts "vector: #{vectorizer(cleaned.last(12))}"
-                    @textArea.appendText("fittest. score: #{cleaned[0]} row: #{cleaned.last(12)} \n")
-                    #@textArea.appendText("SOLUTION: #{cleaned} \n")
-                end
-                #solution = 1
+                allsolutions.push("SOLUTION. score: #{cleaned[0]} row: #{cleaned.last(12)} \n")
+                solutionfound = 1
+                puts "SOLUTION: #{cleaned}"               
             else
                 puts "fittest: #{cleaned}"
-                if counter == generations
+                if counter == generations && solutionfound == 0
                     @textArea.appendText("fittest. score: #{cleaned[0]} row: #{cleaned.last(12)} \n")
-                #   puts "vector: #{vectorizer(cleaned.last(12))}"
                 end
             end
             aaa.delete_at(0)
@@ -873,6 +920,12 @@ def geneticprocess (poolsize,generations,type,avamount)
 
         counter += 1
     end
+    if solutionfound == 1
+        allsolutions.uniq!
+        allsolutions.each do |x|
+             @textArea.appendText("#{x}")
+         end
+     end
     @textArea.appendText("... Evolution Finished!\n")
     puts "FINISHED!"
 end
@@ -884,9 +937,6 @@ end
             if v.text != ""
                 tofloat = v.text.to_f
                 algarray.store(k,tofloat) 
-                if tofloat > 1 
-                    @textArea.appendText("VALUE IS HIGHER THAN 1.0! \n")
-                end
             end
         end
     end
@@ -910,8 +960,6 @@ end
     end
     @intervalcheck.store("value",@intervalcheck1["value"].text)
 
-    #@textArea.appendText("#{@primecheck1["3"]} / #{@primecheck1["4"]} / #{@primecheck1["5"]} / #{@primecheck1["6"]} / #{@primecheck1["7"]} / #{@primecheck1["8"]} / #{@primecheck1["9"]} / #{@primecheck1["10"]} / #{@primecheck1["11"]}  / #{@primecheck1["12"]} \n")
-
     guitoarray(@primecheck1,@primecheck)
     guitoarray(@retrogradecheck1,@retrogradecheck)
     guitoarray(@invertedcheck1,@invertedcheck)
@@ -922,8 +970,6 @@ end
     guitoarray(@pearsoncheck1,@pearsoncheck2)   
     @pearsoncheck = []
     @pearsoncheck2.each_value{|q| @pearsoncheck.push(q + 1)}
-
-    puts "#{ @pearsoncheck}"
 
     guitoarray(@weighting1,@weighting)
 
