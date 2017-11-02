@@ -772,7 +772,7 @@ def errorchecker ()
     valzeroone = 0 #checks no values are < 0 or > 1
     allcrit = 1 # checks at least one criteria is selected
 
-    allvalues = { "interval" => {"value" => @intervalcheck["value"]}, 
+    allvalues = { "interval" => {"1" => @intervalcheck["value"]}, 
               "prime" => @primecheck, 
               "retrogade" => @retrogradecheck,
               "inverted" => @invertedcheck,
@@ -958,7 +958,7 @@ end
     elsif @choice == 1
       @intervalcheck.store("type","melodic")
     end
-    @intervalcheck.store("value",@intervalcheck1["value"].text)
+    @intervalcheck.store("value",@intervalcheck1["value"].text.to_f)
 
     guitoarray(@primecheck1,@primecheck)
     guitoarray(@retrogradecheck1,@retrogradecheck)
