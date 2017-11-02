@@ -515,17 +515,22 @@ def symmetry (winin,winarray,symtype)
     # takes in array (winin) and a an array of window sizes (winarray)
     # outputs the total value of symmetry 
     # prime, retrograde, inverted, retrogradeinverted
+    winreduce = []
+    winarray.each{|x| winreduce.push(x-1) } #this is because a 3 note motif is actually made from 2 vectors, not 3 
+    #puts "winreduce #{winreduce}"
     totsym = []
-    for blib in 0...winarray.length
-        wid = windower(winin,winarray[blib])
+    for blib in 0...winreduce.length
+        wid = windower(winin,winreduce[blib])
         if symtype == "pcset"
             wid2 =[]
             wid.each{|x| wid2.push(pcset(x))}
         else
             wid2 = wid
         end
+        #puts "wid2 #{wid2}"
         totsym.push(windowcompare(wid2,symtype))
     end
+    #puts "totsym #{totsym}"
     totalcombs = 0
     totalmatches = 0
     totsympercentage = []
@@ -536,6 +541,7 @@ def symmetry (winin,winarray,symtype)
     end
     return totsympercentage
 end
+
     def pcset (arin2)
         #generates a pcset
         checkrow = []
