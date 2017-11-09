@@ -801,14 +801,14 @@ def errorchecker ()
     allcrit = 1 # checks at least one criteria is selected
 
     if @pearsoncheck.length > 0
-        pearsy = @pearsoncheck[0].abs
+        pearsy = (@pearsoncheck[0]*0.5).abs #PROBLEM?
     else
         pearsy = 0
     end
 
     allvalues = { "interval" => {"1" => @intervalcheck["value"]}, 
               "prime" => @primecheck, 
-              "retrogade" => @retrogradecheck,
+              "retrograde" => @retrogradecheck,
               "inverted" => @invertedcheck,
               "retroinverted" => @retroinvertedcheck,
               "totalsym" => @totalsymcheck,
@@ -875,7 +875,7 @@ def geneticprocess (poolsize,generations,type,avamount)
         end
         solution = 1
     else
-        puts "#{@primecheck}"
+        #puts "#{@primecheck}"
 
         ga = Iterators.new
 
@@ -902,9 +902,11 @@ def geneticprocess (poolsize,generations,type,avamount)
     solutionfound = 0
     counter = 1
     while counter <= generations && solution == 0
+        @smallpool = [] # new
         pool.each do |row|
             minipool = []
             iterators = ga.swap_iterator(row) + ga.injecter_iterator(row) + ga.rotator_iterator(row) + ga.transposer_iterator(row) + ga.flipper_iterator(row)
+            iterators.push(row)
             iterators.each do |xalg|            
                 if type == "matches"
                     ratingofrow = rowrating(xalg) # this rates the rows
@@ -916,7 +918,7 @@ def geneticprocess (poolsize,generations,type,avamount)
             minipool.each do |k| 
                 @smallpool.push(k)
             end
-        end       
+        end
         @smallpool.keep_if {|bbb| bbb.length >= 13}
         @smallpool.uniq!
         @smallpool.sort!{ |x,y| x <=> y }
@@ -1004,8 +1006,8 @@ end
     guitoarray(@pearsoncheck1,@pearsoncheck2)   
     @pearsoncheck = []
     @pearsoncheck2.each_value{|q| @pearsoncheck.push(q + 1)}
-    puts "@pearsoncheck #{@pearsoncheck}"
-    puts "@pearsoncheck2 #{@pearsoncheck2}"
+    #puts "@pearsoncheck #{@pearsoncheck}"
+    #puts "@pearsoncheck2 #{@pearsoncheck2}"
 
     guitoarray(@weighting1,@weighting)
 
