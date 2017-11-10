@@ -75,7 +75,7 @@ end
 
 class TwelveTone < FXMainWindow
   def initialize(app)
-    super(app, "Dodecafinder by David Pocknee", :width => 720, :height => 700)
+    super(app, "Dodecafinder by David Pocknee", :width => 720, :height => 750)
 
 @intervalcheck1 = { "type" => "harmonic", "value" => 0.0} #options: harmonic (direction independent)/melodic (direction dependent)
 @primecheck1 = { "3" => 1, "4" => 1, "5" => 1, "6" => 1, "7" => 1, "8" => 1, "9" => 1, "10" => 1, "11" => 1 }
@@ -109,6 +109,12 @@ class TwelveTone < FXMainWindow
   "pcset" => false,
   "pearson" => false
 }
+
+@totalsymtype = {"prime" => true,
+                 "retrograde" => false,
+                 "inverted" => true,
+                 "retroinverted" => true}
+
 
 #HEADER
     hFrame1 = FXVerticalFrame.new(self)
@@ -250,7 +256,13 @@ class TwelveTone < FXMainWindow
 # TOTAL SYMMETRY
     totalsymframe1 = FXHorizontalFrame.new(matrix1, LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW)
     FXCheckButton.new(totalsymframe1, "Total Symmetry", nil).connect(SEL_COMMAND) { @onoff["totalsym"] ^= true }
-    totalsymframe2 = FXHorizontalFrame.new(matrix1, LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW)
+    totalsymframe2a = FXVerticalFrame.new(matrix1, LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW)
+    totalsymframe2b = FXHorizontalFrame.new(totalsymframe2a, LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW)
+    FXCheckButton.new(totalsymframe2b, "Prime", nil).connect(SEL_COMMAND) { @totalsymtype["prime"] ^= true } 
+    FXCheckButton.new(totalsymframe2b, "Retrograde", nil).connect(SEL_COMMAND) { @totalsymtype["retrograde"] ^= true } 
+    FXCheckButton.new(totalsymframe2b, "Inverted", nil).connect(SEL_COMMAND) { @totalsymtype["inverted"] ^= true } 
+    FXCheckButton.new(totalsymframe2b, "Retro-inverted", nil).connect(SEL_COMMAND) { @totalsymtype["retroinverted"] ^= true } 
+    totalsymframe2 = FXHorizontalFrame.new(totalsymframe2a, LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW)
     FXLabel.new(totalsymframe2, "3", nil)
     @totalsymcheck1["3"] = FXTextField.new(totalsymframe2, 3)
     FXLabel.new(totalsymframe2, "4", nil)
@@ -473,7 +485,10 @@ def symchooser(in1,in2,symtype)
         in2rev = in2.map{|x| x*-1}
         in2revinv = in2.map{|x| x*-1}
         in2revinv.reverse!
-        if in1 == in2 || in1 == in2.reverse || in1 == in2rev || in1 == in2revinv
+        if (in1 == in2 && @totalsymtype["prime"] == true) || 
+            (in1 == in2.reverse  && @totalsymtype["retrograde"] == true) || 
+            (in1 == in2rev && @totalsymtype["inverted"] == true) || 
+            (in1 == in2revinv  && @totalsymtype["retroinverted"] == true)
             return 1; else; return 0 
         end
     end
