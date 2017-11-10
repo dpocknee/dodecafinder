@@ -110,10 +110,10 @@ class TwelveTone < FXMainWindow
   "pearson" => false
 }
 
-@totalsymtype = {"prime" => true,
+@totalsymtype = {"prime" => false,
                  "retrograde" => false,
-                 "inverted" => true,
-                 "retroinverted" => true}
+                 "inverted" => false,
+                 "retroinverted" => false}
 
 
 #HEADER
