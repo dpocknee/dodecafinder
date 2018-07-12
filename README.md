@@ -64,7 +64,7 @@ This would normally be referred to as "motivic repetition".  In other words, it 
 
 ## 3. Retrograde Symmetry
 
-![Retrograde Symmetry](/documentation/retrogradesymmetry.png)
+![Retrograde Symmetry](/documentation/retrograde.png)
 
 This uses a similar system to prime symmetry but instead tries to find rows in which the motif is retrograded.  Above is an example of a row with a high degree of retrograde symmetry.
 
