@@ -148,7 +148,7 @@ class TwelveTone < FXMainWindow
     intervalframe2b = FXHorizontalFrame.new(intervalframe2, LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW)
     intervalframe2c = FXVerticalFrame.new(intervalframe2b)
     FXLabel.new(intervalframe2c, "Repeated Intervals (0-1):", nil)
-    @intervalcheck1["value"] = FXTextField.new(intervalframe2b, 3)
+    @intervalcheck1["value"] = FXTextField.new(intervalframe2b, 7)
     intervalframe3 = FXVerticalFrame.new(matrix1, LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW)
     FXLabel.new(intervalframe3, "Weighting", nil)
     @weighting1["interval"] = FXTextField.new(intervalframe3, 3)
@@ -317,7 +317,7 @@ class TwelveTone < FXMainWindow
     pearsonframe2b = FXHorizontalFrame.new(pearsonframe2, LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW)
     pearsonframe2c = FXVerticalFrame.new(pearsonframe2b)
     FXLabel.new(pearsonframe2c, "-1 = down, +1 = up, 0 = no correlation", nil)
-    @pearsoncheck1["pearson"] = FXTextField.new(pearsonframe2b, 3)
+    @pearsoncheck1["pearson"] = FXTextField.new(pearsonframe2b, 7)
     pearsonframe3 = FXVerticalFrame.new(matrix1, LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW)
     @weighting1["pearson"] = FXTextField.new(pearsonframe3, 3)
 
